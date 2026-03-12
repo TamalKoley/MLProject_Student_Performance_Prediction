@@ -1,2 +1,4 @@
 venv
 mlproject.egg-info
+__pycache__
+logs
