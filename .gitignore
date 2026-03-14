@@ -3,3 +3,4 @@ mlproject.egg-info
 __pycache__
 logs
 notebook/catboost_info
+artifacts
