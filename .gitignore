@@ -4,3 +4,4 @@ __pycache__
 logs
 notebook/catboost_info
 artifacts
+catboost_info

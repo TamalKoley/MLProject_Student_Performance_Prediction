@@ -5,17 +5,19 @@ from src.logger import logging;
 import pandas as pd;
 from dataclasses import dataclass;
 from sklearn.preprocessing import StandardScaler,OneHotEncoder;
-from src.components.data_ingestion import DataIngestion;
+#from src.components.data_ingestion import DataIngestion;
 from sklearn.compose import ColumnTransformer;
 from sklearn.pipeline import Pipeline;
 from sklearn.impute import SimpleImputer;
 import pickle;
 import numpy as np;
+from typing import Tuple;
+from src.utils import save_object;
 
 @dataclass
 class DataTransformation:
     def __init__(self):
-        self.transformer_model_path=os.path.join('artifacts','transformer_model.pkl')
+        self.__transformer_model_path=os.path.join('artifacts','transformer_model.pkl')
     def __get_transformer(self,numerical_columns,categorical_columns):
         try:
             logging.info('Starting transformer creation')
@@ -42,10 +44,10 @@ class DataTransformation:
         except Exception as e:
             raise CustomException(e,sys);
     
-    def __save_transformer(self,transformer_obj):
-        pickle.dump(transformer_obj,open(self.transformer_model_path,'wb'))
+    # def __save_transformer(self,transformer_obj):
+    #     pickle.dump(transformer_obj,open(self.__transformer_model_path,'wb'))
 
-    def transform_data(self,train_data_path,test_data_path,target_name):
+    def transform_data(self,train_data_path,test_data_path,target_name)->Tuple[np.ndarray, np.ndarray,np.ndarray,np.ndarray, str]:
         try:
             logging.info('Starting Data read for transformation')
             train_dataset=pd.read_csv(train_data_path)
@@ -56,30 +58,33 @@ class DataTransformation:
             logging.info('Numerical and categorical columns are created')
             transformer_obj=self.__get_transformer(numerical_columns=numerical_columns,categorical_columns=categorical_columns)
             x_train_dataset=train_dataset.drop(columns=[target_name],axis=1)
+            y_train_dataset=train_dataset[target_name]
             x_test_dataset=test_dataset.drop(columns=[target_name],axis=1)
+            y_test_dataset=test_dataset[target_name]
             logging.info('Starting fit transform ')
             x_train_dataset_transformed=transformer_obj.fit_transform(x_train_dataset)
             x_test_dataset_transformed=transformer_obj.transform(x_test_dataset)
             logging.info('completed fit transform ')
-            train_arr=np.c_[x_train_dataset_transformed,np.array(x_train_dataset)]
-            test_arr=np.c_[x_test_dataset_transformed,np.array(x_test_dataset)]
-            self.__save_transformer(transformer_obj)
+            #train_arr=np.c_[x_train_dataset_transformed,np.array(x_train_dataset)]
+            #test_arr=np.c_[x_test_dataset_transformed,np.array(x_test_dataset)]
+            #self.__save_transformer(transformer_obj)
+            save_object(object=transformer_obj,filename=self.__transformer_model_path,format='pickle')
             logging.info('Transformer Object saved')
             return(
-                train_arr,
-                test_arr,
-                self.transformer_model_path
+                x_train_dataset_transformed,y_train_dataset,
+                x_test_dataset_transformed,y_test_dataset,
+                self.__transformer_model_path
             )
             
 
         except Exception as e:
             raise CustomException(e,sys)
 
-if __name__=='__main__':
-    dt=DataTransformation()
-    di=DataIngestion()
-    train_path,test_path=di.initiate_data_ingestion();
-    test_array,train_array,model_path=dt.transform_data(train_data_path=train_path,test_data_path=test_path,target_name='math_score')
+# if __name__=='__main__':
+#     dt=DataTransformation()
+#     di=DataIngestion()
+#     train_path,test_path=di.initiate_data_ingestion();
+#     test_array,train_array,model_path=dt.transform_data(train_data_path=train_path,test_data_path=test_path,target_name='math_score')
 
 
 
