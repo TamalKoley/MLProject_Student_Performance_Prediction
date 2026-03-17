@@ -14,8 +14,13 @@ def save_object(object,filename,format,mode='new'):
             pickle.dump(object,open(filename,'wb'))
         elif format=='text' and mode=='append':
             with open(filename,'a') as file:
-                file.writelines(object)
+                file.writelines(str(object))
+        elif format=='text' and mode=='write':
+            with open(filename,'w') as file:
+                file.writelines(str(object))
         logging.info('Data saving process Completed')
+        
+
     except Exception as e:
         raise CustomException(e,sys);
 
